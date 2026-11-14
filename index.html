@@ -291,28 +291,28 @@ const CONFIG = {
      'frames' is how many frames are in that row.
      'biome' is the page they start on: home, projects, experience or contact. */
   villagers: [
-    { name: 'Ada', biome: 'home',
+    { biome: 'home',
       idle: { src: 'assets/villagers/villager1.png', row: 0, frames: 4 },
       walk: { src: 'assets/villagers/villager1.png', row: 1, frames: 6 } },
-    { name: 'Linus', biome: 'projects',
+    { biome: 'projects',
       idle: { src: 'assets/villagers/villager2.png', row: 0, frames: 4 },
       walk: { src: 'assets/villagers/villager2.png', row: 1, frames: 6 } },
-    { name: 'Grace', biome: 'experience',
+    { biome: 'experience',
       idle: { src: 'assets/villagers/villager3.png', row: 0, frames: 4 },
       walk: { src: 'assets/villagers/villager3.png', row: 1, frames: 6 } },
-    { name: 'Alan', biome: 'contact',
+    { biome: 'contact',
       idle: { src: 'assets/villagers/villager4.png', row: 0, frames: 4 },
       walk: { src: 'assets/villagers/villager4.png', row: 1, frames: 6 } },
-    { name: 'Sarah', biome: 'home',
+    { biome: 'home',
       idle: { src: 'assets/villagers/villager5.png', row: 0, frames: 4 },
       walk: { src: 'assets/villagers/villager5.png', row: 1, frames: 6 } },
-    { name: 'Alice', biome: 'projects',
+    { biome: 'projects',
       idle: { src: 'assets/villagers/villager6.png', row: 0, frames: 4 },
       walk: { src: 'assets/villagers/villager6.png', row: 1, frames: 6 } },
-    { name: 'Chris', biome: 'projects',
+    { biome: 'projects',
       idle: { src: 'assets/villagers/villager8.png', row: 0, frames: 4 },
       walk: { src: 'assets/villagers/villager8.png', row: 1, frames: 6 } },
-    { name: 'Philipa', biome: 'contact',
+    { biome: 'contact',
       idle: { src: 'assets/villagers/villager7.png', row: 0, frames: 4 },
       walk: { src: 'assets/villagers/villager7.png', row: 1, frames: 6 } }
   ]
@@ -335,7 +335,7 @@ const BIOMES = {
 };
 
 // Things villagers say when they bump into each other
-const LINES = ['Hello!', 'Nice day!', 'Seen George\'s CV?', 'Java or C#?', 'git push!', 'Any bugs?', 'Hire him!', 'Tea?', 'Lovely scene'];
+const LINES = ['Hello!', 'Nice day!', 'Java or C#?', 'git push!', 'Any bugs?', 'Tea?', 'Lovely place', 'How are you?', 'I\'m lost.'];
 
 
 /* ==========================================================================
@@ -504,7 +504,6 @@ class Villager {
     this.el = document.createElement('div');
     this.el.className = 'v';
     this.el.style.cssText = `width:${W}px;height:${H}px;bottom:${this.depth}px;z-index:${100 - Math.round(this.depth)}`;
-    this.el.title = cfg.name;       // shows the name on hover
     this.spr = document.createElement('div');
     this.spr.className = 'spr';
     this.bub = document.createElement('div');

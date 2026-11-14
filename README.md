@@ -2,7 +2,7 @@
 
 My personal portfolio site: a pixel-art village you can explore. Each page is a different biome, and the villagers at the bottom wander around, stop to chat with each other, and can be picked up and dropped onto another tab to move them to a different biome.
 
-**Live site:** portfolio.happold.org
+**Live site:** george.happold.org
 
 ## Features
 
@@ -52,7 +52,7 @@ Then open http://localhost:8000. (Opening `index.html` directly can work too, bu
 
 The settings are at the top of the script in `index.html`:
 
-- **Add a villager:** add an entry to `CONFIG.villagers` with a name, a biome and the sprite sheet rows for idle and walk.
+- **Add a villager:** add an entry to `CONFIG.villagers` with a biome and the sprite sheet rows for idle and walk.
 - **Change frame size or speed:** `frameW`, `frameH`, `scale` and `fps` in `CONFIG`.
 - **Change backgrounds:** edit the `BIOMES` object.
 - **Change what villagers say:** edit the `LINES` list.
