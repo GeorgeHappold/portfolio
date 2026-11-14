@@ -198,12 +198,12 @@ main a { color: var(--link); font-weight: 700; }
     <p>I write software in Java, Python, C# and C++, and I like explaining technical ideas clearly. I also lead teams, usually against a deadline. The villagers below are part of this site: drag them around and see what they say to each other.</p>
 
     <h2>Skills</h2>
-    <p><b>Languages</b><br><span class="tag">Java</span><span class="tag">C#</span><span class="tag">Python</span><span class="tag">C++</span><span class="tag">JavaScript</span><span class="tag">HTML/CSS</span><span class="tag">SQL</span><span class="tag">Bash</span></p>
-    <p><b>Tools</b><br><span class="tag">Git</span><span class="tag">JUnit</span><span class="tag">Agile</span><span class="tag">Linux</span><span class="tag">Unity</span><span class="tag">Godot</span></p>
-    <p><b>Libraries</b><br><span class="tag">JavaFX</span><span class="tag">ROS2</span><span class="tag">Pandas</span><span class="tag">NumPy</span><span class="tag">SciPy</span></p>
+    <p><b>Languages</b><br><span class="tag">Java</span><span class="tag">C#</span><span class="tag">Python</span><span class="tag">C++</span><span class="tag">JavaScript</span><span class="tag">HTML/CSS</span><span class="tag">SQL (MySQL)</span><span class="tag">Bash</span></p>
+    <p><b>Practices &amp; Tools</b><br><span class="tag">Git</span><span class="tag">JUnit</span><span class="tag">Agile</span><span class="tag">VS Code</span><span class="tag">Linux</span><span class="tag">Unity</span><span class="tag">Godot</span><span class="tag">3D printing</span></p>
+    <p><b>Libraries &amp; Frameworks</b><br><span class="tag">JavaFX</span><span class="tag">ROS2</span><span class="tag">Pandas</span><span class="tag">NumPy</span><span class="tag">SciPy</span><span class="tag">scikit-learn</span><span class="tag">LightGBM</span></p>
 
     <h2>Education</h2>
-    <p><b>BSc Computer Science with Industrial Placement Year</b>, University of Sussex, 2025 to 2029. Modules include Data Structures and Algorithms, Databases, Compilers and Computer Architecture, and Design and Analysis of Algorithms.</p>
+    <p><b>BSc Computer Science with Industrial Placement Year</b>, University of Sussex, Sep 2025 to May 2029. Modules include Further Programming, Data Structures and Algorithms, Professional Skills, Databases, Compilers and Computer Architecture, and Design and Analysis of Algorithms.</p>
   </section>
 
   <!-- ===== PROJECTS ===== -->
@@ -211,21 +211,33 @@ main a { color: var(--link); font-weight: 700; }
     <h1>Projects</h1>
 
     <div class="proj">
+      <h3>Video-synced olfactory display</h3>
+      <span class="tag">C++ (ESP32)</span><span class="tag">Python</span><span class="tag">Circuitry</span>
+      <p>I wanted to deliver smells in sync with video, so I read research on smell and taste interfaces and chose air-flow delivery over atomisers or electrical stimulation because it is safer and simpler. I built a four-channel scent display from an ESP32, a relay board and micro air pumps on a separate 5V supply. Each pump pushes air through a scent-soaked reservoir to a shared nozzle, and a fan clears leftover scent between cues. I wrote C++ firmware that takes serial commands (timed pulses, per-channel control, status checks), plus a Python script using pyserial that triggers scents from a timestamped cue list as the video plays.</p>
+    </div>
+
+    <div class="proj">
+      <h3>FPL points predictor and squad optimiser</h3>
+      <span class="tag">Python</span><span class="tag">LightGBM</span><span class="tag">pandas</span><span class="tag">SciPy</span>
+      <p>Built a Python pipeline over 140,000+ player-gameweek records to predict Fantasy Premier League points, training a LightGBM model on form, minutes and team-strength features while making sure none of them leaked future information. Tested on unseen 2024-25 data, it raised rank correlation for regular starters from 0.30 to 0.38 compared with a recent-form baseline, and I removed a third-party feature that seemed to leak post-match information. I then turned squad selection and weekly transfers into a mixed-integer linear programme (SciPy) with budget, formation, club-limit and transfer-hit constraints, and backtested it over a full season.</p>
+    </div>
+
+    <div class="proj">
       <h3>Global Design Challenge (Finalist)</h3>
-      <span class="tag">Team leadership</span><span class="tag">CAD</span>
-      <p>Led a team of five to design a communal garden with 3D-printed hydroponics, giving the Ladywood community in Birmingham access to fresh vegetables. We reached the global finals and presented a 3D-printed prototype to a panel of professional judges.</p>
+      <span class="tag">Team management</span><span class="tag">CAD</span>
+      <p>Led a team of five to design a communal garden with 3D-printed hydroponics, giving the Ladywood community in Birmingham access to fresh vegetables. We reached the global finals, where we showed a 3D-printed prototype and presented our idea to professional judges and other teams. The judges said the social side of the project came through strongly.</p>
     </div>
 
     <div class="proj">
       <h3>Rhythm game, HackSussex</h3>
-      <span class="tag">Godot</span><span class="tag">Git</span>
-      <p>Built a rhythm game in 24 hours with a team of three. We split tasks through Git, fixed bugs together under time pressure and presented the finished game to the judges.</p>
+      <span class="tag">Godot</span><span class="tag">Git</span><span class="tag">Team management</span>
+      <p>Built a rhythm game in Godot in 24 hours with a team of three. We split tasks through Git, fixed bugs under time pressure, finished before the deadline and presented the game to the judges, who were impressed by how well the music synced.</p>
     </div>
 
     <div class="proj">
       <h3>CanSat</h3>
-      <span class="tag">Python</span><span class="tag">Circuitry</span><span class="tag">CAD</span>
-      <p>Led a team of seven to build a model satellite. I wrote Python scripts that collected and charted air pressure, temperature and humidity, which we used to interpret conditions in the upper atmosphere on the day.</p>
+      <span class="tag">Python</span><span class="tag">Circuitry</span><span class="tag">CAD</span><span class="tag">Team management</span>
+      <p>Led a team of seven to design and build a model satellite for the CanSat competition, managing tasks and deadlines. I wrote Python scripts that collected and displayed air pressure, temperature and humidity, which we used on the day to draw our own conclusions about the upper atmosphere.</p>
     </div>
 
     <p>More of my work is on <a href="https://github.com/GeorgeHappold" target="_blank" rel="noopener">GitHub</a>.</p>
@@ -236,26 +248,16 @@ main a { color: var(--link); font-weight: 700; }
     <h1>Experience</h1>
 
     <h3>Peer Assisted Learning Tutor</h3>
-    <p>University of Sussex, Sep 2026 to present</p>
-    <ul>
-      <li>Run weekly drop-in sessions for first-year Computer Science students on Data Structures and Algorithms and Mathematics.</li>
-      <li>Developing a Unity game workshop with a fellow tutor.</li>
-      <li>Building my time management and communication skills in a small team.</li>
-    </ul>
+    <p>University of Sussex</p>
+    <p>I run weekly drop-in sessions for first-year Computer Science students, helping them with topics like Data Structures and Algorithms and Maths. I'm also working with another tutor to build and teach a Unity/C# game development workshop. Students have very different skill levels, so we made it work for beginners and more experienced students alike, and five now attend regularly. The role has improved my time management and communication.</p>
 
-    <h3>Work experience, Opteran</h3>
-    <p>Sheffield, 5 to 9 Jul 2024</p>
-    <ul>
-      <li>Spent a week with a robotics company building navigation technology inspired by nature, programming in ROS2 with Python and C++.</li>
-      <li>Saw how an agile team works while heading towards a funding-round deadline.</li>
-      <li>Assembled hardware and circuitry and tested robots on-site.</li>
-    </ul>
+    <h3>Work Experience Internship</h3>
+    <p>Opteran</p>
+    <p>Spent a week at a robotics company building navigation technology inspired by nature, writing robot code in Python and C++ using ROS2. I joined an agile team working towards a funding-round deadline, helped assemble hardware and circuits, then tested the robots on-site and in their testing suite.</p>
 
     <h3>Programming and Robotics Mentor</h3>
-    <p>St Marylebone School, Sep 2024 to Mar 2025 (volunteer)</p>
-    <ul>
-      <li>Taught programming and robot building to a team of younger students, who reached the national FTC final.</li>
-    </ul>
+    <p>St Marylebone School (volunteer)</p>
+    <p>Volunteered to teach programming and robotics to younger students at my school, helping them learn to code and build a robot. The team reached the national FTC robotics competition final.</p>
   </section>
 
   <!-- ===== CONTACT ===== -->
