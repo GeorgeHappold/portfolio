@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>George Happold | Computer Science Portfolio</title>
+
+<!-- Pixel-style heading font (Silkscreen) and a readable body font (Nunito) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+/* ---------- Colours ----------
+   Everything uses these variables, so dark mode only has to change them here. */
+:root {
+  --wood: #5b3a22;       /* nav buttons and card frame */
+  --wood2: #7a5230;      /* nav button hover */
+  --paper: #f6ecd2;      /* card background */
+  --ink: #2b1d12;        /* main text */
+  --edge: #2b1d12;       /* dark outlines */
+  --leaf: #2f6b3a;       /* skill tags and project accents */
+  --link: #0b4d8c;       /* links inside the card */
+  --navtext: #f6ecd2;    /* text on nav buttons */
+  --bubble: #ffffff;     /* speech bubble background */
+  --track: #8fd3ff;      /* dark mode switch background (sky) */
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --wood: #3a2a4a;
+  --wood2: #54406b;
+  --paper: #231d2b;
+  --ink: #efe6d2;
+  --edge: #0c0912;
+  --leaf: #3f8f4e;
+  --link: #8ec5ff;
+  --navtext: #efe6d2;
+  --bubble: #efe6d2;
+  --track: #2a2250;      /* night sky */
+  color-scheme: dark;
+}
+
+/* ---------- Page basics ---------- */
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  font-family: Nunito, system-ui, sans-serif;
+  color: var(--ink);
+  overflow: hidden;      /* the page never scrolls, only the card does */
+}
+
+/* ---------- Background scene (parallax layers are added to #scene by the JS) ---------- */
+#scene { position: fixed; inset: 0; overflow: hidden; transition: filter .3s; }
+.layer {
+  position: absolute; inset: 0;
+  background-repeat: repeat-x;       /* layers tile sideways so they can drift forever */
+  background-position: 0 100%;       /* sit on the bottom edge */
+  background-size: auto 100%;        /* scale to the height of the window */
+  image-rendering: pixelated;        /* keep the pixel art crisp */
+}
+/* Dim the scenery and villagers a little in dark mode */
+:root[data-theme="dark"] #scene { filter: brightness(.55) saturate(.85); }
+:root[data-theme="dark"] #world { filter: brightness(.9); }
+
+/* ---------- Navigation tabs and dark mode switch ---------- */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 3;
+  display: flex; gap: 6px; justify-content: center; align-items: center; flex-wrap: wrap;
+  padding: 10px;
+}
+nav a {
+  font: 700 14px Silkscreen, monospace;
+  color: var(--navtext); background: var(--wood);
+  border: 3px solid var(--edge);
+  padding: 8px 14px;
+  text-decoration: none; cursor: pointer;
+  box-shadow: 0 3px 0 var(--edge);
+}
+@media (hover: hover) { nav a:hover { background: var(--wood2); } }   /* hover colour only on devices with a mouse */
+nav a.drop { background: #ffd23f; color: #2b1d12; transform: translateY(3px); }   /* tab highlights while a villager hovers over it */
+nav a[aria-current=page] { background: var(--paper); color: var(--ink); }   /* the page you're on */
+/* The dark mode switch: a track with a sliding knob that shows a sun (light) or moon (dark) */
+.switch {
+  position: relative; width: 62px; height: 34px; padding: 0; cursor: pointer;
+  background: var(--track);
+  border: 3px solid var(--edge);
+  box-shadow: 0 3px 0 var(--edge);
+  transition: background .25s;
+}
+.knob {
+  position: absolute; top: 3px; left: 3px;
+  width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  background: #ffd23f;                       /* sunny yellow */
+  border: 2px solid var(--edge);
+  transition: transform .25s, background .25s;
+}
+.knob svg { width: 16px; height: 16px; }
+.moon { display: none; }
+:root[data-theme="dark"] .knob { transform: translateX(26px); background: #efe6d2; }   /* slide right, turn pale */
+:root[data-theme="dark"] .sun { display: none; }
+:root[data-theme="dark"] .moon { display: block; }
+
+a:focus-visible, button:focus-visible { outline: 3px solid #ffd23f; outline-offset: 2px; }
+
+/* ---------- The card in the middle ---------- */
+main {
+  position: fixed; z-index: 2;
+  top: calc(var(--nav-h, 56px) + 8px);   /* just under the nav (height measured by the JS) */
+  bottom: var(--world-h, 150px);         /* leaves room for the villagers underneath (set by the JS) */
+  left: 50%; transform: translateX(-50%);
+  width: min(720px, 94vw);
+  overflow: auto;                    /* long pages scroll inside the card */
+  background: var(--paper);
+  border: 4px solid var(--edge);
+  box-shadow: 0 0 0 4px var(--wood), 0 8px 0 4px var(--edge);   /* wooden frame */
+  padding: 22px 26px;
+  line-height: 1.55;
+}
+section { display: none; }           /* only the current page's section is shown */
+section.on { display: block; }
+
+/* ---------- Text and content styles ---------- */
+h1, h2, h3 { font-family: Silkscreen, monospace; margin: 0 0 .4em; line-height: 1.2; }
+h1 { font-size: 30px; }
+h2 { font-size: 22px; margin-top: 1em; }
+h3 { font-size: 16px; margin-top: 1.2em; }
+p { margin: .4em 0; max-width: 62ch; }
+ul { padding-left: 1.2em; margin: .4em 0; }
+main a { color: var(--link); font-weight: 700; }
+
+.tag {                               /* the little green skill/tech labels */
+  display: inline-block;
+  background: var(--leaf); color: #fff;
+  font-size: 12px; font-weight: 700;
+  padding: 1px 8px; margin: 2px 3px 2px 0;
+}
+.proj { border-left: 6px solid var(--leaf); padding-left: 14px; margin: 1.2em 0; }   /* one project entry */
+.proj h3 { margin-top: 0; }
+
+/* ---------- Villagers ---------- */
+#world { position: fixed; left: 0; right: 0; bottom: 0; height: 0; z-index: 5; pointer-events: none; }   /* layer that holds all villagers */
+.v { position: absolute; left: 0; bottom: 0; pointer-events: auto; touch-action: none; cursor: grab; user-select: none; }
+.v.drag { cursor: grabbing; }
+.spr { width: 100%; height: 100%; image-rendering: pixelated; background-repeat: no-repeat; }   /* the sprite itself */
+.ph { font-size: 40px; text-align: center; display: flex; align-items: flex-end; justify-content: center; }   /* emoji placeholder if the image is missing */
+.bub {                               /* speech bubble */
+  position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+  background: var(--bubble); color: #2b1d12;
+  border: 3px solid var(--edge);
+  font: 11px Silkscreen, monospace; padding: 4px 8px; white-space: nowrap;
+  display: none;
+}
+.v.talk .bub { display: block; }
+
+/* ---------- Small screens (phones) ---------- */
+@media (max-width: 560px) {
+  nav { gap: 4px; padding: 8px 6px; }
+  nav a { font-size: 11px; padding: 8px 8px; min-height: 36px; }
+  .switch { width: 54px; height: 32px; }
+  .knob { width: 20px; height: 20px; }
+  :root[data-theme="dark"] .knob { transform: translateX(22px); }
+  main { padding: 16px; }
+  h1 { font-size: 24px; }
+  h2 { font-size: 18px; }
+  h3 { font-size: 15px; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- Background: the parallax layers get added in here by the JavaScript -->
+<div id="scene"></div>
+
+<!-- Navigation: each link is a "page" (a biome). The switch on the end toggles dark mode. -->
+<nav aria-label="Pages">
+  <a href="#home">Home</a>
+  <a href="#projects">Projects</a>
+  <a href="#experience">Experience</a>
+  <a href="#contact">Contact</a>
+  <button id="theme" class="switch" type="button" role="switch" aria-checked="false" aria-label="Dark mode" title="Dark mode">
+    <span class="knob">
+      <!-- sun (shown in light mode) -->
+      <svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="#d97706"/><path stroke="#d97706" stroke-width="1.6" d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M12.6 3.4l-1.4 1.4M4.8 11.2l-1.4 1.4"/></svg>
+      <!-- moon (shown in dark mode) -->
+      <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4b3a7a" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </span>
+  </button>
+</nav>
+
+<!-- The card in the middle. Only the section matching the current page is shown. -->
+<main id="card" tabindex="-1">
+
+  <!-- ===== HOME ===== -->
+  <section id="home">
+    <h1>Hi, I'm George Happold</h1>
+    <p>I'm a second-year Computer Science student at the University of Sussex, with a predicted First and an 80% average. I'm looking for a placement year from Summer 2027, and I'm happy to relocate.</p>
+    <p>I write software in Java, Python, C# and C++, and I like explaining technical ideas clearly. I also lead teams, usually against a deadline. The villagers below are part of this site: drag them around and see what they say to each other.</p>
+
+    <h2>Skills</h2>
+    <p><b>Languages</b><br><span class="tag">Java</span><span class="tag">C#</span><span class="tag">Python</span><span class="tag">C++</span><span class="tag">JavaScript</span><span class="tag">HTML/CSS</span><span class="tag">SQL</span><span class="tag">Bash</span></p>
+    <p><b>Tools</b><br><span class="tag">Git</span><span class="tag">JUnit</span><span class="tag">Agile</span><span class="tag">Linux</span><span class="tag">Unity</span><span class="tag">Godot</span></p>
+    <p><b>Libraries</b><br><span class="tag">JavaFX</span><span class="tag">ROS2</span><span class="tag">Pandas</span><span class="tag">NumPy</span><span class="tag">SciPy</span></p>
+
+    <h2>Education</h2>
+    <p><b>BSc Computer Science with Industrial Placement Year</b>, University of Sussex, 2025 to 2029. Modules include Data Structures and Algorithms, Databases, Compilers and Computer Architecture, and Design and Analysis of Algorithms.</p>
+  </section>
+
+  <!-- ===== PROJECTS ===== -->
+  <section id="projects">
+    <h1>Projects</h1>
+
+    <div class="proj">
+      <h3>Global Design Challenge (Finalist)</h3>
+      <span class="tag">Team leadership</span><span class="tag">CAD</span>
+      <p>Led a team of five to design a communal garden with 3D-printed hydroponics, giving the Ladywood community in Birmingham access to fresh vegetables. We reached the global finals and presented a 3D-printed prototype to a panel of professional judges.</p>
+    </div>
+
+    <div class="proj">
+      <h3>Rhythm game, HackSussex</h3>
+      <span class="tag">Godot</span><span class="tag">Git</span>
+      <p>Built a rhythm game in 24 hours with a team of three. We split tasks through Git, fixed bugs together under time pressure and presented the finished game to the judges.</p>
+    </div>
+
+    <div class="proj">
+      <h3>CanSat</h3>
+      <span class="tag">Python</span><span class="tag">Circuitry</span><span class="tag">CAD</span>
+      <p>Led a team of seven to build a model satellite. I wrote Python scripts that collected and charted air pressure, temperature and humidity, which we used to interpret conditions in the upper atmosphere on the day.</p>
+    </div>
+
+    <p>More of my work is on <a href="https://github.com/GeorgeHappold" target="_blank" rel="noopener">GitHub</a>.</p>
+  </section>
+
+  <!-- ===== EXPERIENCE ===== -->
+  <section id="experience">
+    <h1>Experience</h1>
+
+    <h3>Peer Assisted Learning Tutor</h3>
+    <p>University of Sussex, Sep 2026 to present</p>
+    <ul>
+      <li>Run weekly drop-in sessions for first-year Computer Science students on Data Structures and Algorithms and Mathematics.</li>
+      <li>Developing a Unity game workshop with a fellow tutor.</li>
+      <li>Building my time management and communication skills in a small team.</li>
+    </ul>
+
+    <h3>Work experience, Opteran</h3>
+    <p>Sheffield, 5 to 9 Jul 2024</p>
+    <ul>
+      <li>Spent a week with a robotics company building navigation technology inspired by nature, programming in ROS2 with Python and C++.</li>
+      <li>Saw how an agile team works while heading towards a funding-round deadline.</li>
+      <li>Assembled hardware and circuitry and tested robots on-site.</li>
+    </ul>
+
+    <h3>Programming and Robotics Mentor</h3>
+    <p>St Marylebone School, Sep 2024 to Mar 2025 (volunteer)</p>
+    <ul>
+      <li>Taught programming and robot building to a team of younger students, who reached the national FTC final.</li>
+    </ul>
+  </section>
+
+  <!-- ===== CONTACT ===== -->
+  <section id="contact">
+    <h1>Get in touch</h1>
+    <p>I'm looking for a placement year from Summer 2027. If you have a role or want to talk about a project, email me.</p>
+    <ul>
+      <li>Email: <a href="mailto:george@happold.org">george@happold.org</a></li>
+      <li>GitHub: <a href="https://github.com/GeorgeHappold" target="_blank" rel="noopener">github.com/GeorgeHappold</a></li>
+      <li>LinkedIn: <a href="https://linkedin.com/in/georgehappold" target="_blank" rel="noopener">linkedin.com/in/georgehappold</a></li>
+    </ul>
+    <p><a href="George_Happold_CV.pdf">Download my CV (PDF)</a></p>
+  </section>
+
+</main>
+
+<!-- Villagers are added in here by the JavaScript (outside the pages so they stay when you switch) -->
+<div id="world" aria-hidden="true"></div>
+
+<script>
+/* ==========================================================================
+   SETTINGS - the bits you're most likely to want to change
+   ========================================================================== */
+
+const CONFIG = {
+  scale: 4,                  // how much to enlarge the pixel art (phones use 3 so the villagers aren't huge)
+  frameW: 32, frameH: 32,    // size of ONE frame in the sprite sheets (pixels)
+  facesRight: true,          // set to false if the sprites face left by default
+  fps: { idle: 4, walk: 8 }, // animation speeds (frames per second)
+
+  /* Each villager needs an idle and a walk animation.
+     'row' is which row of the sprite sheet (counting from 0 at the top),
+     'frames' is how many frames are in that row.
+     'biome' is the page they start on: home, projects, experience or contact. */
+  villagers: [
+    { name: 'Ada', biome: 'home',
+      idle: { src: 'assets/villagers/villager1.png', row: 0, frames: 4 },
+      walk: { src: 'assets/villagers/villager1.png', row: 1, frames: 6 } },
+    { name: 'Linus', biome: 'projects',
+      idle: { src: 'assets/villagers/villager2.png', row: 0, frames: 4 },
+      walk: { src: 'assets/villagers/villager2.png', row: 1, frames: 6 } },
+    { name: 'Grace', biome: 'experience',
+      idle: { src: 'assets/villagers/villager3.png', row: 0, frames: 4 },
+      walk: { src: 'assets/villagers/villager3.png', row: 1, frames: 6 } },
+    { name: 'Alan', biome: 'contact',
+      idle: { src: 'assets/villagers/villager4.png', row: 0, frames: 4 },
+      walk: { src: 'assets/villagers/villager4.png', row: 1, frames: 6 } },
+    { name: 'Sarah', biome: 'home',
+      idle: { src: 'assets/villagers/villager5.png', row: 0, frames: 4 },
+      walk: { src: 'assets/villagers/villager5.png', row: 1, frames: 6 } },
+    { name: 'Alice', biome: 'projects',
+      idle: { src: 'assets/villagers/villager6.png', row: 0, frames: 4 },
+      walk: { src: 'assets/villagers/villager6.png', row: 1, frames: 6 } },
+    { name: 'Chris', biome: 'projects',
+      idle: { src: 'assets/villagers/villager8.png', row: 0, frames: 4 },
+      walk: { src: 'assets/villagers/villager8.png', row: 1, frames: 6 } },
+    { name: 'Philipa', biome: 'contact',
+      idle: { src: 'assets/villagers/villager7.png', row: 0, frames: 4 },
+      walk: { src: 'assets/villagers/villager7.png', row: 1, frames: 6 } }
+  ]
+};
+
+/* Backgrounds. Each biome is a stack of image layers, listed BACK to FRONT
+   (sky first, nearest ground last).
+   layers('home', 5) means assets/bg/home/1.png ... 5.png.
+   You can also list layers by hand and give them options, e.g.
+     { src: 'assets/bg/home/clouds.png', drift: 8 }
+   speed = how far a layer moves with the mouse, drift = automatic sideways speed.
+   'fb' is a gradient that shows if the images are missing. */
+const layers = (dir, n) => Array.from({ length: n }, (_, i) => `assets/bg/${dir}/${i + 1}.png`);
+
+const BIOMES = {
+  home:       { layers: layers('home', 5),       fb: 'linear-gradient(#8fd3ff,#d7f3ff 60%,#7ec850 60%,#4e9a3a)' },
+  projects:   { layers: layers('projects', 5),   fb: 'linear-gradient(#a7d8b0,#e4f4d0 55%,#3f7d3a 55%,#2b5a2a)' },
+  experience: { layers: layers('experience', 5), fb: 'linear-gradient(#ff9a62,#ffd89b 60%,#6b8e3a 60%,#4a6a2a)' },
+  contact:    { layers: layers('contact', 5),    fb: 'linear-gradient(#1b2a5c,#4a4a8a 60%,#2c4a3a 60%,#1c3326)' }
+};
+
+// Things villagers say when they bump into each other
+const LINES = ['Hello!', 'Nice day!', 'Seen George\'s CV?', 'Java or C#?', 'git push!', 'Any bugs?', 'Hire him!', 'Tea?', 'Lovely scene'];
+
+
+/* ==========================================================================
+   SETUP - shared values and helpers
+   ========================================================================== */
+
+// Size of one villager on screen, in pixels
+const S = innerWidth < 560 ? Math.min(3, CONFIG.scale) : CONFIG.scale;   // slightly smaller on phones
+const W = CONFIG.frameW * S, H = CONFIG.frameH * S;
+
+const world = document.getElementById('world');   // where villagers live
+const scene = document.getElementById('scene');   // where background layers live
+
+// Random number between a and b
+const rnd = (a, b) => a + Math.random() * (b - a);
+
+
+/* ==========================================================================
+   LAYOUT (works for phones too)
+   The nav can wrap onto two lines on a small screen, and the villagers' size
+   depends on the screen, so we measure them and tell the CSS how much room the
+   card should leave at the top and bottom.
+   ========================================================================== */
+
+const nav = document.querySelector('nav');
+
+function updateLayout() {
+  const root = document.documentElement.style;
+  root.setProperty('--nav-h', nav.offsetHeight + 'px');
+  root.setProperty('--world-h', (H + 30) + 'px');
+}
+new ResizeObserver(updateLayout).observe(nav);   // re-measure whenever the nav changes size (rotation, fonts loading...)
+updateLayout();
+
+
+/* ==========================================================================
+   DARK MODE
+   The site always starts in light mode (data-theme="light" on <html>).
+   The switch just flips that attribute and the CSS does the rest.
+   ========================================================================== */
+
+const themeSwitch = document.getElementById('theme');
+
+themeSwitch.addEventListener('click', () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme !== 'dark';        // flip it
+  root.dataset.theme = dark ? 'dark' : 'light';
+  themeSwitch.setAttribute('aria-checked', dark);    // lets screen readers know the state
+});
+
+
+/* ==========================================================================
+   PARALLAX BACKGROUND
+   Each layer slides sideways by a different amount as the mouse moves, which
+   makes the scenery look like it has depth.
+   ========================================================================== */
+
+let layerEls = [];   // the layers currently on screen
+let mx = 0;          // mouse position across the window, from -0.5 to 0.5
+let cur = 0;         // the smoothed version of mx (eases towards it)
+let drift = 0;       // seconds elapsed, used for automatic drifting
+const reduceMotion = matchMedia('(prefers-reduced-motion:reduce)').matches;   // respect the visitor's motion setting
+
+// Replace the background with the layers for one biome
+function buildLayers(b) {
+  scene.style.background = b.fb;
+  scene.replaceChildren();
+  layerEls = b.layers.map((l, i, arr) => {
+    const o = typeof l === 'string' ? { src: l } : l;   // a layer can be a plain path or an object
+    const d = document.createElement('div');
+    d.className = 'layer';
+    d.style.backgroundImage = `url("${o.src}")`;
+    scene.append(d);
+    return {
+      d,
+      speed: o.speed ?? (i / Math.max(1, arr.length - 1)) * 60,   // front layers move more by default
+      drift: o.drift || 0
+    };
+  });
+}
+
+addEventListener('pointermove', e => { mx = e.clientX / innerWidth - 0.5; });
+
+
+/* ==========================================================================
+   PAGES (BIOMES)
+   The page is picked from the URL hash (#home, #projects, ...)
+   ========================================================================== */
+
+function show() {
+  // Work out which page we're on, falling back to home
+  const id = BIOMES[location.hash.slice(1)] ? location.hash.slice(1) : 'home';
+
+  buildLayers(BIOMES[id]);
+
+  // Show only this page's section in the card
+  document.querySelectorAll('section').forEach(s => s.classList.toggle('on', s.id === id));
+
+  // Mark the matching nav tab as the current page
+  document.querySelectorAll('nav a').forEach(a => {
+    if (a.getAttribute('href') === '#' + id) a.setAttribute('aria-current', 'page');
+    else a.removeAttribute('aria-current');
+  });
+
+  document.getElementById('card').scrollTop = 0;   // start each page at the top
+
+  // Only show the villagers who live in this biome
+  if (typeof villagers !== 'undefined') {
+    villagers.forEach(v => v.el.style.display = v.biome === id ? '' : 'none');
+  }
+
+  document.title = id[0].toUpperCase() + id.slice(1) + ' | George Happold';
+}
+addEventListener('hashchange', show);
+
+
+/* ==========================================================================
+   VILLAGERS
+   They live outside the page sections, so they follow you between biomes.
+   Each one is always in one of these states:
+     idle  - standing still
+     walk  - walking to a random spot
+     chat  - stopped to talk to a neighbour
+     held  - being dragged
+     fall  - dropped, falling to the ground
+   ========================================================================== */
+
+const villagers = [];
+
+// Which nav tab is at this point on the screen? (used when dragging villagers to a new biome)
+function tabAt(x, y) {
+  return [...document.querySelectorAll('nav a')].find(a => {
+    const r = a.getBoundingClientRect();
+    return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+  });
+}
+
+class Villager {
+  constructor(cfg) {
+    this.cfg = cfg;
+    this.biome = cfg.biome;
+
+    // Position: x across the screen, y is height above the ground
+    this.x = rnd(20, innerWidth - W - 20);
+    this.y = 0;
+    this.vy = 0;                    // falling speed
+    this.depth = rnd(0, 26);        // small offset from the bottom so they overlap naturally
+
+    // Behaviour
+    this.dir = 1;                   // 1 = facing right, -1 = facing left
+    this.state = 'idle';
+    this.timer = rnd(0.5, 3);       // seconds until the next state change
+    this.tx = this.x;               // x position they're walking towards
+    this.drag = false;
+    this.cool = 0;                  // cooldown before they can chat again
+    this.talk = 0;                  // how long the speech bubble stays up
+
+    // Animation
+    this.frame = 0;
+    this.ft = 0;                    // time since the last frame change
+    this.anim = {};
+    this.cur = null;                // the animation currently showing
+    this.failed = 0;                // how many images failed to load
+
+    // Build the HTML for this villager: a wrapper, the sprite and a speech bubble
+    this.el = document.createElement('div');
+    this.el.className = 'v';
+    this.el.style.cssText = `width:${W}px;height:${H}px;bottom:${this.depth}px;z-index:${100 - Math.round(this.depth)}`;
+    this.el.title = cfg.name;       // shows the name on hover
+    this.spr = document.createElement('div');
+    this.spr.className = 'spr';
+    this.bub = document.createElement('div');
+    this.bub.className = 'bub';
+    this.el.append(this.spr, this.bub);
+    world.append(this.el);
+
+    // Load the idle and walk images and work out their sizes
+    for (const k of ['idle', 'walk']) {
+      const o = typeof cfg[k] === 'string' ? { src: cfg[k] } : cfg[k];
+      const an = this.anim[k] = { src: o.src, row: o.row || 0, frames: o.frames, ok: false };
+      const img = new Image();
+      img.onload = () => {
+        an.ok = true;
+        an.bw = img.naturalWidth * S;     // full sheet size, scaled up
+        an.bh = img.naturalHeight * S;
+        an.frames = an.frames || Math.max(1, Math.floor(img.naturalWidth / CONFIG.frameW));   // guess frame count if not given
+      };
+      img.onerror = () => {
+        // If both images fail, show an emoji so the villager is still visible
+        if (++this.failed === 2) { this.spr.className = 'spr ph'; this.spr.textContent = cfg.emoji || '🙂'; }
+      };
+      img.src = o.src;
+    }
+
+    this.bindDrag();
+  }
+
+  // Mouse/touch dragging. Dropping a villager on a nav tab moves them to that biome.
+  bindDrag() {
+    // Picked up
+    this.el.addEventListener('pointerdown', e => {
+      this.drag = true;
+      this.el.classList.add('drag');
+      this.el.setPointerCapture(e.pointerId);        // keep getting events even if the pointer leaves the villager
+      this.ox = e.clientX - this.x;                  // remember where on the villager we grabbed
+      this.oy = e.clientY;
+      this.oy0 = this.y;
+      this.state = 'held';
+      this.say('Whoa!', 1);
+    });
+
+    // Being dragged
+    this.el.addEventListener('pointermove', e => {
+      if (!this.drag) return;
+      this.x = Math.max(0, Math.min(innerWidth - W, e.clientX - this.ox));   // stay inside the window
+      this.y = Math.max(0, this.oy0 + (this.oy - e.clientY));                // can't go below the ground
+      const t = tabAt(e.clientX, e.clientY);                                 // highlight a tab if we're over one
+      document.querySelectorAll('nav a').forEach(a => a.classList.toggle('drop', a === t));
+    });
+
+    // Let go
+    const up = e => {
+      if (!this.drag) return;
+      this.drag = false;
+      this.el.classList.remove('drag');
+      this.vy = 0;
+      this.state = 'fall';                           // gravity takes over
+      document.querySelectorAll('nav a').forEach(a => a.classList.remove('drop'));
+
+      // Dropped on a different tab? Move to that biome and switch the page
+      const t = tabAt(e.clientX, e.clientY);
+      if (t) {
+        const id = t.getAttribute('href').slice(1);
+        if (id !== this.biome) {
+          this.biome = id;
+          this.say('New home!', 2);
+          location.hash = id;
+        }
+      }
+    };
+    this.el.addEventListener('pointerup', up);
+    this.el.addEventListener('pointercancel', up);
+  }
+
+  // Show a speech bubble for s seconds
+  say(text, s = 2.5) {
+    this.bub.textContent = text;
+    this.talk = s;
+    this.el.classList.add('talk');
+  }
+
+  // Runs every frame. dt = seconds since the last frame.
+  update(dt) {
+    // Hide the speech bubble when its time is up
+    if (this.talk > 0 && (this.talk -= dt) <= 0) this.el.classList.remove('talk');
+    this.cool -= dt;
+
+    // --- Behaviour ---
+    if (this.state === 'fall') {
+      // Gravity: speed up downwards until we hit the ground
+      this.vy -= 1800 * dt;
+      this.y += this.vy * dt;
+      if (this.y <= 0) { this.y = 0; this.vy = 0; this.state = 'idle'; this.timer = rnd(1, 3); }
+
+    } else if (this.state === 'idle' || this.state === 'chat') {
+      // Wait, then pick a random spot to walk to
+      if ((this.timer -= dt) <= 0) {
+        this.state = 'walk';
+        this.tx = rnd(10, innerWidth - W - 10);
+        this.dir = this.tx > this.x ? 1 : -1;
+      }
+
+    } else if (this.state === 'walk') {
+      // Walk towards the target, then stand still for a bit
+      this.x += this.dir * 45 * dt;
+      const arrived = (this.dir > 0 && this.x >= this.tx) || (this.dir < 0 && this.x <= this.tx);
+      if (arrived) { this.state = 'idle'; this.timer = rnd(1.5, 5); }
+    }
+
+    // --- Animation: pick the right row and step through its frames ---
+    const k = this.state === 'walk' ? 'walk' : 'idle';
+    const a = this.anim[k].ok ? this.anim[k] : (this.anim.idle.ok ? this.anim.idle : null);   // fall back to idle if walk is missing
+    if (a) {
+      // Switched animation? Point the sprite at the new image and restart
+      if (this.cur !== a) {
+        this.cur = a;
+        this.frame = 0;
+        this.spr.style.backgroundImage = `url("${a.src}")`;
+        this.spr.style.backgroundSize = `${a.bw}px ${a.bh}px`;
+      }
+      // Move to the next frame when enough time has passed
+      this.ft += dt;
+      if (this.ft > 1 / CONFIG.fps[k]) { this.ft = 0; this.frame = (this.frame + 1) % a.frames; }
+      // Slide the sheet so only the current frame shows through the window
+      this.spr.style.backgroundPosition = `${-this.frame * W}px ${-a.row * H}px`;
+    }
+
+    // --- Draw: move the wrapper, flip only the sprite (so speech bubbles don't flip) ---
+    const flip = (this.dir > 0) === CONFIG.facesRight ? 1 : -1;
+    this.el.style.transform = `translate(${this.x}px,${-this.y}px)`;
+    this.spr.style.transform = `scaleX(${flip})`;
+  }
+}
+
+// Create every villager from the settings at the top
+CONFIG.villagers.forEach(c => villagers.push(new Villager(c)));
+show();   // now that villagers exist, show the first page
+
+
+/* ==========================================================================
+   VILLAGERS TALKING TO EACH OTHER
+   If two villagers in the same biome get close, they turn to face each other
+   and each says something.
+   ========================================================================== */
+
+function interact() {
+  for (let i = 0; i < villagers.length; i++) {
+    for (let j = i + 1; j < villagers.length; j++) {
+      const a = villagers[i], b = villagers[j];
+      if (a.biome !== b.biome) continue;   // only chat with neighbours in the same biome
+
+      const free = ['idle', 'walk'].includes(a.state) && ['idle', 'walk'].includes(b.state);   // not held, falling or already chatting
+      const close = Math.abs(a.x - b.x) < W * 1.2 && Math.abs(a.depth - b.depth) < 30;
+
+      if (free && close && a.cool <= 0 && b.cool <= 0) {
+        a.state = b.state = 'chat';
+        a.timer = b.timer = 3;                       // chat for 3 seconds
+        a.dir = b.x > a.x ? 1 : -1;                  // face each other
+        b.dir = -a.dir;
+        a.say(LINES[Math.floor(rnd(0, LINES.length))]);
+        setTimeout(() => b.say(LINES[Math.floor(rnd(0, LINES.length))]), 900);   // b replies a moment later
+        a.cool = b.cool = 10;                        // don't chat again for 10 seconds
+      }
+    }
+  }
+}
+
+
+/* ==========================================================================
+   MAIN LOOP
+   Runs about 60 times a second: moves villagers and updates the parallax.
+   ========================================================================== */
+
+let last = performance.now();
+
+(function loop(t) {
+  const dt = Math.min(0.05, (t - last) / 1000);   // seconds since last frame (capped so tab-switching doesn't cause jumps)
+  last = t;
+
+  villagers.forEach(v => v.update(dt));
+  interact();
+
+  // Ease the parallax towards the mouse position and slide each layer
+  cur += (mx - cur) * Math.min(1, dt * 4);
+  drift += dt;
+  if (!reduceMotion) {
+    layerEls.forEach(l => {
+      l.d.style.backgroundPositionX = (-cur * l.speed * 2 - drift * l.drift) + 'px';
+    });
+  }
+
+  requestAnimationFrame(loop);
+})(last);
+
+// If the window gets narrower, keep villagers on screen
+addEventListener('resize', () => villagers.forEach(v => v.x = Math.min(v.x, innerWidth - W)));
+</script>
+</body>
+</html>
